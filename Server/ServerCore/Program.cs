@@ -2,35 +2,36 @@
 {
     internal class Program
     {
-        volatile static bool _stop = false;
-
-        static void ThreadMain()
-        {
-            Console.WriteLine("쓰레드 시작!");
-
-            while (_stop == false)
-            { 
-                // 누군가가 stop 신호를 해주기를 기다린다.
-            }
-
-            Console.WriteLine("쓰레드 종료!");
-        }
-
         static void Main(string[] args)
         {
-            Task t = new Task(ThreadMain);
-            t.Start();
+            int[,] array = new int[10000, 10000];
 
-            Thread.Sleep(1000);
+            {
+                // [][][][][] [][][][][] [][][][][] [][][][][] [][][][][]
+                long now = DateTime.Now.Ticks;
+                for (int y = 0; y < 10000; y++)
+                {
+                    for (int x = 0; x < 10000; x++)
+                    {
+                        array[y, x] = 1;
+                    }
+                }
+                long end = DateTime.Now.Ticks;
+                Console.WriteLine($"(y, x) 걸린 시간 : {end - now}");
+            }
 
-            _stop = true;
-
-            Console.WriteLine("Stop 호출");
-            Console.WriteLine("종료 대기중");
-
-            t.Wait(); // thread에서는 join. task에서는 Wait.
-
-            Console.WriteLine("종료 성공");
+            { 
+                long now = DateTime.Now.Ticks;
+                for (int y = 0; y < 10000; y++)
+                {
+                    for (int x = 0; x < 10000; x++)
+                    {
+                        array[x, y] = 1; // 캐시 철학의 공간 지역성에 대한 이점을 활용할 수 없다.
+                    }
+                }
+                long end = DateTime.Now.Ticks;
+                Console.WriteLine($"(x, y) 걸린 시간 : {end - now}");
+            }
         }
     }
 }
