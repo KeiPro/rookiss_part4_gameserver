@@ -8,9 +8,12 @@
         {
             while (true)
             {
-                // Interlocked.Exchange의 반환값은 오리지널 값이다. 즉, 내가 1로 바꾸겠다고 하기전의 값을 말한다.
-                int original = Interlocked.Exchange(ref _locked, 1);
-                if (original == 0) // 이전의 값이 0이라면 내 코드로 인해서 1로 바뀐것이기 때문에 break를 한다는 뜻이다.
+                // CAS (Compare - And - Swap)
+                int expected = 0;
+                int desired = 1;
+                
+                // locked와 expected의 값을 비교해서 같으면 _locked의 값을 desired값으로 바꿔준다.
+                if (Interlocked.CompareExchange(ref _locked, desired, expected) == expected)
                     break;
             }
         }
@@ -28,7 +31,7 @@
 
         static void Thread_1()
         {
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 1000000; i++)
             {
                 _lock.Acquire();
                 _num++;
@@ -38,7 +41,7 @@
 
         static void Thread_2()
         {
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 1000000; i++)
             {
                 _lock.Acquire();
                 _num--;
