@@ -1,42 +1,34 @@
 ﻿namespace ServerCore
 {
-    class SpinLock
+    class Lock
     {
-        volatile int _locked = 0;
+        // AutoResetEvent : 커널단의 관리자가 관리하고 있는 bool변수.
+        // param : true는 문을 연 상태로 시작할 것인가? 닫은 상태로 시작할 것인가?에 대한 bool값임.
+        // Auto라는 단어의 뜻은 하나가 지나가면 자동으로 문을 닫아준다는 클래스가 된다.
+        AutoResetEvent _available = new AutoResetEvent(true);
 
         public void Acquire()
         {
-            while (true)
-            {
-                // CAS (Compare - And - Swap)
-                int expected = 0;
-                int desired = 1;
-                
-                // locked와 expected의 값을 비교해서 같으면 _locked의 값을 desired값으로 바꿔준다.
-                if (Interlocked.CompareExchange(ref _locked, desired, expected) == expected)
-                    break;
+            // 입장 시도 -> _available의 bool변수가 false로 바뀐다. _available.Reset()함수가 포함되어 있음.
+            _available.WaitOne();
 
-
-                // Thread.Sleep(1); // 무조건 휴식 => 무조건 1ms 정도 쉬겠다는 뜻.
-                // Thread.Sleep(0); // 조건부 양보 => 나보다 우선순위가 낮은 얘들한테는 양보 불가 => 우선순위가 나보다 같거나 높은 쓰레드가 없으면 다시 본인한테 돌아옴.
-                Thread.Yield(); // 관대한 양보 => 관대하게 양보할테니, 지금 실행이 가능한 쓰레드가 있으면 실행하세요 => 실행 가능한 얘가 없으면 남은 시간을 보인한테 소진.
-            }
+            // _available.Reset(); // bool = false
         }
 
         public void Release()
         {
-            _locked = 0;
+            _available.Set(); // 원상 복귀를 하는 코드 즉, 맨 처음에 true로 설정했으므로 true로 돌려준다.
         }
     }
 
     internal class Program
     {
         static int _num = 0;
-        static SpinLock _lock = new SpinLock();
+        static Lock _lock = new Lock();
 
         static void Thread_1()
         {
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 100000; i++)
             {
                 _lock.Acquire();
                 _num++;
@@ -46,7 +38,7 @@
 
         static void Thread_2()
         {
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 100000; i++)
             {
                 _lock.Acquire();
                 _num--;
