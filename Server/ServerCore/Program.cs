@@ -5,7 +5,7 @@
         // AutoResetEvent : 커널단의 관리자가 관리하고 있는 bool변수.
         // param : true는 문을 연 상태로 시작할 것인가? 닫은 상태로 시작할 것인가?에 대한 bool값임.
         // Auto라는 단어의 뜻은 하나가 지나가면 자동으로 문을 닫아준다는 클래스가 된다.
-        AutoResetEvent _available = new AutoResetEvent(true);
+        ManualResetEvent _available = new ManualResetEvent(true);
 
         public void Acquire()
         {
