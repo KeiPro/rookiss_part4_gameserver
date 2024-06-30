@@ -42,13 +42,30 @@ namespace ServerCore
         }
 
         public void ReadLock()
-        { 
-        
+        {
+            // 아무도 WriteLock을 획득하고 있지 않으면, ReadCount를 1 늘린다.
+            while (true)
+            {
+                for (int i = 0; i < MAX_SPIN_COUNT; i++)
+                {
+                    int expected = (_flag & READ_MASK);
+                    if (Interlocked.CompareExchange(ref _flag, expected + 1, expected) == expected)
+                        return;
+
+                    //if ((_flag & WRITE_MASK) == 0)
+                    //{ 
+                    //    _flag = _flag + 1;
+                    //    return;
+                    //}
+                }
+
+                Thread.Yield();
+            }
         }
 
         public void ReadUnlock()
-        { 
-        
+        {
+            Interlocked.Decrement(ref _flag);
         }
     }
 }
