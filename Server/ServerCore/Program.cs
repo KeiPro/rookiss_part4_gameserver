@@ -1,29 +1,58 @@
-﻿namespace ServerCore
+﻿using System.Net;
+using System.Net.Sockets;
+using System.Text;
+
+namespace ServerCore
 {
     internal class Program
     {
-        // 인자값으로 넣어준 Func은 스레드가 새로 실행될 때마다 ThreadName 변수를 새로 만들어주는 것이 아니라,
-        // 한 번이라도 ThreadName.Value가 셋팅이 안 되었다면 해당 Func을 실행해서 ThreadName.Value를 셋팅해주고
-        // 만약 셋팅이 되어 있었다면 셋팅된 쓰레드 이름 그대로 사용하겠다는 것.
-        static ThreadLocal<string> ThreadName = new ThreadLocal<string>(() => { return $"My Name is {Thread.CurrentThread.ManagedThreadId}"; });
-
-        static void WhoAmI()
-        {
-            bool repeat = ThreadName.IsValueCreated;
-            if (repeat)
-                Console.WriteLine(ThreadName.Value + " (repeat)");
-            else
-                Console.WriteLine(ThreadName.Value);
-        }
-
         static void Main(string[] args)
         {
-            ThreadPool.SetMinThreads(1, 1);
-            ThreadPool.SetMaxThreads(3, 3);
-            // Task를 직접 만들지 않고 ThreadPool에서 직접 필요한 만큼 꺼내와서 활용하는 Parallel클래스.
-            Parallel.Invoke(WhoAmI, WhoAmI, WhoAmI, WhoAmI, WhoAmI, WhoAmI);
+            // DNS (Domain Name System)
+            // 도메인을 하나 등록한 다음에 이 이름에 해당하는 ip를 찾아낼 수 있게끔 해주는 시스템.
+            string host = Dns.GetHostName();
+            IPHostEntry ipHost = Dns.GetHostEntry(host);
+            IPAddress ipAddr = ipHost.AddressList[0];
+            IPEndPoint endPoint = new IPEndPoint(ipAddr, 7777);
 
-            ThreadName.Dispose();
+            // 문지기
+            Socket listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                // 문지기 교육
+                listenSocket.Bind(endPoint);
+
+                // 영업 시작
+                // backlog : 최대 대기수
+                listenSocket.Listen(10);
+
+                while (true)
+                {
+                    Console.WriteLine("Listening...");
+
+                    // 손님을 입장시킨다
+                    Socket clientSocket = listenSocket.Accept(); // 세션의 소켓
+
+                    // 받는다
+                    byte[] recvBuff = new byte[1024];
+                    int recvBytes = clientSocket.Receive(recvBuff);
+                    string recvData = Encoding.UTF8.GetString(recvBuff, 0, recvBytes);
+                    Console.WriteLine($"[From Client] {recvData}");
+
+                    // 보낸다
+                    byte[] sendBuff = Encoding.UTF8.GetBytes("Welcome to MMORPG Server !");
+                    clientSocket.Send(sendBuff);
+
+                    // 쫓아낸다
+                    clientSocket.Shutdown(SocketShutdown.Both); // 듣기도 싫고, 말하기도 싫다를 명시해주기.
+                    clientSocket.Close();
+                }
+            } 
+            catch (Exception ex) 
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
     }
 }
