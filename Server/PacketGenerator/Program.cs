@@ -10,13 +10,18 @@ namespace PacketGenerator
 
         static void Main(string[] args)
         {
+            string pdlPath = "../PDL.xml";
+
             XmlReaderSettings settings = new XmlReaderSettings()
             {
                 IgnoreComments = true,
                 IgnoreWhitespace = true,
             };
 
-            using (XmlReader r = XmlReader.Create("PDL.xml", settings))
+            if (args.Length >= 1)
+                pdlPath = args[0];
+
+            using (XmlReader r = XmlReader.Create(pdlPath, settings))
             {
                 // XML파일에서 핵심 내용 부분으로 커서가 옮겨짐(헤더를 다 건너뛴다.)
                 r.MoveToContent();
