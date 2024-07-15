@@ -5,20 +5,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Server
+internal class PacketHandler
 {
-    internal class PacketHandler
+    public static void C_PlayerInfoReqHandler(PacketSession session, IPacket packet)
     {
-        public static void PlayerInfoReqHandler(PacketSession session, IPacket packet)
+        C_PlayerInfoReq p = packet as C_PlayerInfoReq;
+
+        Console.WriteLine($"PlayerInfoReq : {p.playerId} {p.name}");
+
+        foreach (C_PlayerInfoReq.Skill skill in p.skills)
         {
-            PlayerInfoReq p = packet as PlayerInfoReq;
-
-            Console.WriteLine($"PlayerInfoReq : {p.playerId} {p.name}");
-
-            foreach (PlayerInfoReq.Skill skill in p.skills)
-            {
-                Console.WriteLine($"Skill({skill.id})({skill.level})({skill.duration})");
-            }
+            Console.WriteLine($"Skill({skill.id})({skill.level})({skill.duration})");
         }
+    }
+
+    public static void TestHandler(PacketSession session, IPacket packet)
+    {
+         
     }
 }
