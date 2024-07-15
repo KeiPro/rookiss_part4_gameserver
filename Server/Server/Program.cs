@@ -13,6 +13,8 @@ namespace Server
 
         static void Main(string[] args)
         {
+            PacketManager.Instance.Register();
+
             // DNS (Domain Name System)
             // 도메인을 하나 등록한 다음에 이 이름에 해당하는 ip를 찾아낼 수 있게끔 해주는 시스템.
             string host = Dns.GetHostName();
