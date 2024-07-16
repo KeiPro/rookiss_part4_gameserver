@@ -16,17 +16,14 @@ namespace PacketGenerator
 class PacketManager
 {{
     #region Singleton
-    static PacketManager _instance;
-    public static PacketManager Instance
-    {{
-        get
-        {{
-            if ( _instance == null )
-                _instance = new PacketManager();
-            return _instance;
-        }}
-    }}
+    static PacketManager _instance = new PacketManager();
+    public static PacketManager Instance {{ get {{ return _instance; }} }}
     #endregion
+
+    PacketManager()
+    {{
+        Register();
+    }}
 
     Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>> _onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>>();
     Dictionary<ushort, Action<PacketSession, IPacket>> _handler = new Dictionary<ushort, Action<PacketSession, IPacket>>();
@@ -62,7 +59,7 @@ class PacketManager
 
         // {0} 패킷 이름
         public static string managerRegisterFormat =
-@"       _onRecv.Add((ushort)PacketID.{0}, MakePacket<{0}>);
+@"        _onRecv.Add((ushort)PacketID.{0}, MakePacket<{0}>);
         _handler.Add((ushort)PacketID.{0}, PacketHandler.{0}Handler);";
 
         // {0} 패킷 이름 / 번호 목록
