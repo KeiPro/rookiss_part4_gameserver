@@ -28,6 +28,8 @@ namespace Server
             // 코드 종료만 안되게 무한루프를 돌림.
             while (true)
             {
+                Room.Push(() => Room.Flush());
+                Thread.Sleep(250);
                 ;
             }
         }

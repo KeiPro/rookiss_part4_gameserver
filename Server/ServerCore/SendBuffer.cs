@@ -11,7 +11,7 @@ namespace ServerCore
         // 전역은 전역이지만 내 쓰레드에서만 사용할 수 있는 전역 변수.
         public static ThreadLocal<SendBuffer> CurrentBuffer = new ThreadLocal<SendBuffer>(() => { return null; });
 
-        public static int ChunkSize { get; set; } = 4096 * 100;
+        public static int ChunkSize { get; set; } = 65535 * 100;
 
         public static ArraySegment<byte> Open(int reserveSize)
         { 
