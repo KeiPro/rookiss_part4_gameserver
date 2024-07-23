@@ -18,7 +18,7 @@
       <float name="posX"/>
       <float name="posY"/>
       <float name="posZ"/>
-    </list>
+    </list> 
   </packet>
   <packet name="C_Move">
     <float name="posX"/>
